@@ -85,24 +85,35 @@ public class MovimientoController {
         try{
             Cuenta cuenta = cuentaService.get(movimiento.getCuenta().getCuentaid());
             movimiento.setCuenta(cuenta);
-            if ((movimiento.getCuenta().getSaldo()>0) || (movimiento.getTipoMovimiento().toUpperCase().equals("DEPOSITO"))){
+            if (((movimiento.getCuenta().getSaldo()>0) ) || (movimiento.getTipoMovimiento().toUpperCase().equals("DEPOSITO"))){
                 movimiento.setFecha(LocalDate.now());
                 if (movimiento.getTipoMovimiento().toUpperCase().equals("RETIRO")){
-                    List<Movimiento> movimientosFecha = movimientoService.findByFecha(movimiento.getFecha());
+                    List<Movimiento> movimientosFecha = movimientoService.findByCuentaAndFecha(movimiento.getCuenta(), movimiento.getFecha());
+
                     double limiteDiario = 0;
                     if ((!movimientosFecha.isEmpty())){
                         for (Movimiento mov : movimientosFecha){
-                            limiteDiario += mov.getValor();
+                            if (mov.getTipoMovimiento().toUpperCase().equals("RETIRO"))
+                                limiteDiario += (mov.getValor()*-1);
                         }
                     }
 
-                    if (limiteDiario<1000){
-                        cuenta.setSaldo(cuenta.getSaldo() + movimiento.getValor());
-                        cuentaService.save(cuenta);
-                        movimientoService.save(movimiento);
-                        response.setError(null);
-                        response.setMessage("Movimiento exitoso");
-                        response.setCorrectProcess(true);
+                    if (((limiteDiario + (movimiento.getValor()*-1)) < 1000)){
+                        if(((movimiento.getValor()*-1)<= movimiento.getCuenta().getSaldo())){
+                            movimientoService.save(movimiento);
+                            cuenta.setSaldo(cuenta.getSaldo() + movimiento.getValor());
+                            cuentaService.save(cuenta);
+                            response.setError(null);
+                            response.setMessage("Movimiento exitoso");
+                            response.setCorrectProcess(true);
+                            response.setData(movimiento);
+                        }else {
+                            response.setError(null);
+                            response.setMessage("Saldo no disponible");
+                            response.setCorrectProcess(true);
+                            response.setData(null);
+                        }
+
                         response.setData(movimiento);
                     }else{
                         response.setError(null);
@@ -111,9 +122,9 @@ public class MovimientoController {
                         response.setData(null);
                     }
                 }else{
+                    movimientoService.save(movimiento);
                     cuenta.setSaldo(cuenta.getSaldo() + movimiento.getValor());
                     cuentaService.save(cuenta);
-                    movimientoService.save(movimiento);
                     response.setError(null);
                     response.setMessage("Movimiento exitoso");
                     response.setCorrectProcess(true);

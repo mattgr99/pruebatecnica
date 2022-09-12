@@ -38,8 +38,8 @@ public class MovimientoService implements IMovimientoService {
     }
 
     @Override
-    public List<Movimiento> findByFecha(LocalDate fecha) {
-        return movimientoRepository.findByFecha(fecha);
+    public List<Movimiento> findByCuentaAndFecha(Cuenta cuenta, LocalDate fecha) {
+        return movimientoRepository.findByCuentaAndFecha(cuenta, fecha);
     }
 
     @Override

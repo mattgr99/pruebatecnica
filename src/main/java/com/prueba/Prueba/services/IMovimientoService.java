@@ -13,6 +13,6 @@ public interface IMovimientoService {
     Movimiento get(Long id);
     void delete(Long id);
     List<Movimiento> findAll();
-    List<Movimiento> findByFecha(LocalDate fecha);
+    List<Movimiento> findByCuentaAndFecha(Cuenta cuenta, LocalDate fecha);
     List<Movimiento> findByCuentaAndFechaBetween(Cuenta cuenta, LocalDate from, LocalDate to);
 }
